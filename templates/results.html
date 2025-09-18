@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search Results</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:600,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+      font-family: 'Montserrat', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .container {
+      background: #f6fffc;
+      padding: 40px 32px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(33,147,176,0.2);
+      max-width: 1000px;
+      width: 100%;
+    }
+    h1 {
+      color: #2193b0;
+      margin-bottom: 20px;
+      font-size: 2.2em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 {
+      color: #185a9d;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 1.4em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .emoji {
+      font-size: 1.3em;
+    }
+    p {
+      font-size: 1em;
+      color: #333;
+      line-height: 1.6;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 30px;
+      font-size: 1em;
+      background: #fafafa;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    th, td {
+      border: 1px solid #cce9f2;
+      padding: 12px 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #2193b0;
+      color: #f6fffc;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background-color: #f0faff;
+    }
+    a {
+      color: #185a9d;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    a:hover {
+      text-decoration: underline;
+      color: #6dd5ed;
+    }
+    #plot {
+      width: 100%;
+      height: 500px;
+      margin-top: 20px;
+      border-radius: 14px;
+      background: #f0faff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    @media (max-width: 700px) {
+      .container { padding: 20px 12px; }
+      table, th, td { font-size: 0.9em; }
+      #plot { height: 350px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><span class="emoji">✅</span>Top Deals for "{{ product }}"</h1>
+
+    <h2><span class="emoji">🧠</span>Ollama Summary</h2>
+    <p>{{ summary }}</p>
+
+    <h2><span class="emoji">🔥</span>Top 5 Deals</h2>
+    <table>
+      <tr>
+        <th>Title</th>
+        <th>Price (₹)</th>
+        <th>Rating</th>
+        <th>URL</th>
+      </tr>
+      {% for deal in deals %}
+      <tr>
+        <td>{{ deal.Title }}</td>
+        <td>{{ deal.Price_num }}</td>
+        <td>{{ deal.Rating_num }}</td>
+        <td><a href="{{ deal.URL }}" target="_blank">View</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <h2><span class="emoji">📊</span>3D Price/Rating Plot</h2>
+    <div id="plot"></div>
+  </div>
+  <script>
+    var plotData = JSON.parse('{{ plot_json | tojson | safe }}');
+    Plotly.newPlot('plot', plotData.data, plotData.layout);
+  </script>
+</body>
+</html>

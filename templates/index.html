@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Deal Finder</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:600,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+      font-family: 'Montserrat', Arial, sans-serif;
+      color: #222;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: #fff;
+      padding: 40px 32px;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(33,147,176,0.15);
+      text-align: center;
+      width: 350px;
+    }
+    h1 {
+      color: #2193b0;
+      margin-bottom: 18px;
+      font-size: 2.2em;
+    }
+    label {
+      font-size: 1.1em;
+      color: #333;
+      margin-bottom: 10px;
+      display: block;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #6dd5ed;
+      font-size: 1em;
+      margin-bottom: 20px;
+      outline: none;
+      transition: border 0.25s ease, box-shadow 0.25s ease;
+    }
+    input[type="text"]:focus {
+      border-color: #2193b0;
+      box-shadow: 0 0 10px rgba(33,147,176,0.4);
+    }
+    button {
+      background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(33,147,176,0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(33,147,176,0.25);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(33,147,176,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔎 Smart Deal Finder</h1>
+    <form action="/search" method="post">
+      <label for="product">Enter Product Name:</label>
+      <input type="text" id="product" name="product" required autocomplete="off" placeholder="e.g. iPhone 15 Pro">
+      <button type="submit">Find Deals</button>
+    </form>
+  </div>
+</body>
+</html>
