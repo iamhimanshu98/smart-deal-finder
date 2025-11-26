@@ -1,7 +1,0 @@
-flask
-pandas
-ollama
-selenium
-bs4
-plotly
-scikit-learn

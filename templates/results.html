@@ -1,133 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Search Results</title>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:600,400&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
-      font-family: 'Montserrat', Arial, sans-serif;
-      margin: 0;
-      min-height: 100vh;
-      padding: 20px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .container {
-      background: #f6fffc;
-      padding: 40px 32px;
-      border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(33,147,176,0.2);
-      max-width: 1000px;
-      width: 100%;
-    }
-    h1 {
-      color: #2193b0;
-      margin-bottom: 20px;
-      font-size: 2.2em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    h2 {
-      color: #185a9d;
-      margin-top: 30px;
-      margin-bottom: 15px;
-      font-size: 1.4em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .emoji {
-      font-size: 1.3em;
-    }
-    p {
-      font-size: 1em;
-      color: #333;
-      line-height: 1.6;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-bottom: 30px;
-      font-size: 1em;
-      background: #fafafa;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    th, td {
-      border: 1px solid #cce9f2;
-      padding: 12px 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #2193b0;
-      color: #f6fffc;
-      font-weight: 600;
-    }
-    tr:nth-child(even) {
-      background-color: #f0faff;
-    }
-    a {
-      color: #185a9d;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-    a:hover {
-      text-decoration: underline;
-      color: #6dd5ed;
-    }
-    #plot {
-      width: 100%;
-      height: 500px;
-      margin-top: 20px;
-      border-radius: 14px;
-      background: #f0faff;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    }
-    @media (max-width: 700px) {
-      .container { padding: 20px 12px; }
-      table, th, td { font-size: 0.9em; }
-      #plot { height: 350px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - Smart Product Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1><span class="emoji">✅</span>Top Deals for "{{ product }}"</h1>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-sparkles"></i>
+                <span>Smart Product Recommendation System</span>
+            </div>
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i> New Search
+            </a>
+        </div>
+    </nav>
 
-    <h2><span class="emoji">🧠</span>Ollama Summary</h2>
-    <p>{{ summary }}</p>
+    <main class="container results-container">
+        <!-- Results Header -->
+        <section class="results-header">
+            <div class="header-content">
+                <h2>Search Results for: <span class="highlight-text">{{ product }}</span></h2>
+                
+                <!-- Selected Platforms Badge -->
+                {% if websites %}
+                <div class="platforms-badge">
+                    <i class="fas fa-globe"></i> 
+                    <strong>Searched on:</strong>
+                    {% for website in websites %}
+                        <span class="platform-tag platform-{{ website }}">
+                            {% if website == 'amazon' %}
+                                <i class="fab fa-amazon"></i> Amazon
+                            {% elif website == 'flipkart' %}
+                                <i class="fas fa-store"></i> Flipkart
+                            {% elif website == 'croma' %}
+                                <i class="fas fa-laptop"></i> Croma
+                            {% endif %}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
 
-    <h2><span class="emoji">🔥</span>Top 5 Deals</h2>
-    <table>
-      <tr>
-        <th>Title</th>
-        <th>Price (₹)</th>
-        <th>Rating</th>
-        <th>URL</th>
-      </tr>
-      {% for deal in deals %}
-      <tr>
-        <td>{{ deal.Title }}</td>
-        <td>{{ deal.Price_num }}</td>
-        <td>{{ deal.Rating_num }}</td>
-        <td><a href="{{ deal.URL }}" target="_blank">View</a></td>
-      </tr>
-      {% endfor %}
-    </table>
+            <!-- New Search Form -->
+            <form method="POST" action="/search" class="quick-search-form">
+                <div class="quick-search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input 
+                        type="text" 
+                        name="product" 
+                        placeholder="Search another product..." 
+                        class="quick-search-input"
+                    >
+                    <button type="submit" class="quick-search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </section>
 
-    <h2><span class="emoji">📊</span>3D Price/Rating Plot</h2>
-    <div id="plot"></div>
-  </div>
-  <script>
-    var plotData = JSON.parse('{{ plot_json | tojson | safe }}');
-    Plotly.newPlot('plot', plotData.data, plotData.layout);
-  </script>
+        <!-- Error Alert -->
+        {% if error %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <div class="alert-content">
+                <strong>Search Error</strong><br>
+                {{ error }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Results Section -->
+        {% if not error and deals %}
+        <section class="results-section">
+            <!-- Results Summary -->
+            <div class="results-summary">
+                <h3><i class="fas fa-star"></i> Top 5 Recommended Deals</h3>
+                <span class="results-count">{{ deals|length }} products found</span>
+            </div>
+
+            <!-- Deals Grid -->
+            <div class="deals-grid">
+                {% for deal in deals %}
+                <div class="deal-card">
+                    <div class="deal-rank">Deal #{{ loop.index }}</div>
+                    
+                    <!-- Platform Badge -->
+                    <div class="platform-source">
+                        {% if deal.source == 'Amazon' %}
+                            <i class="fab fa-amazon"></i>
+                        {% elif deal.source == 'Flipkart' %}
+                            <i class="fas fa-store"></i>
+                        {% elif deal.source == 'Croma' %}
+                            <i class="fas fa-laptop"></i>
+                        {% endif %}
+                        <span>{{ deal.source }}</span>
+                    </div>
+                    
+                    <!-- Product Details -->
+                    <div class="deal-details">
+                        <h4 class="product-title" title="{{ deal.title }}">
+                            {{ deal.title[:55] }}{% if deal.title|length > 55 %}...{% endif %}
+                        </h4>
+                        
+                        <!-- Stats Row -->
+                        <div class="product-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Price</span>
+                                <span class="stat-value price-value">{{ deal.price }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Rating</span>
+                                <span class="stat-value rating-value">
+                                    <i class="fas fa-star"></i> {{ deal.rating }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <a href="{{ deal.url }}" target="_blank" rel="noopener noreferrer" class="btn-view-deal">
+                        View Deal <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Visualization Section -->
+            {% if plot_json %}
+            <section class="visualization-section">
+                <h3><i class="fas fa-chart-scatter"></i> Deal Analysis Visualization</h3>
+                <div id="plot" class="plotly-container"></div>
+                <p class="chart-description">3D visualization showing price vs discount vs rating for all products</p>
+            </section>
+
+            <script>
+                try {
+                    const plotData = JSON.parse('{{ plot_json|safe }}');
+                    Plotly.newPlot('plot', plotData.data, plotData.layout, {responsive: true});
+                } catch (error) {
+                    console.error('Error rendering chart:', error);
+                }
+            </script>
+            {% endif %}
+
+            <!-- Statistics Section -->
+            <section class="stats-section">
+                <h3><i class="fas fa-chart-bar"></i> Search Statistics</h3>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ deals|length }}</div>
+                        <div class="stat-title">Top Deals Found</div>
+                        <p class="stat-desc">Using KNN algorithm</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ websites|length }}</div>
+                        <div class="stat-title">Platforms Searched</div>
+                        <p class="stat-desc">Real-time comparison</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">ML</div>
+                        <div class="stat-title">Technology</div>
+                        <p class="stat-desc">K-Nearest Neighbors</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">Live</div>
+                        <div class="stat-title">Data Source</div>
+                        <p class="stat-desc">Real-time web scraping</p>
+                    </div>
+                </div>
+            </section>
+        </section>
+        {% elif not error %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No Results Found</h3>
+            <p>Try searching for a different product or select different platforms</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Smart Product Recommendation System | Advanced AI & Data Science</p>
+        </div>
+    </footer>
 </body>
 </html>
