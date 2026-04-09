@@ -365,25 +365,35 @@ try:
     
     # Clean Price - handle malformed data
     def extract_price(price_str):
-        try:
-            # Remove all non-digit characters except decimal point
-            cleaned = re.sub(r'[^\d.]', '', str(price_str))
-            # Handle multiple decimals like ".1798." -> keep only first decimal
-            if cleaned.count('.') > 1:
-                parts = cleaned.split('.')
-                cleaned = parts[0] + '.' + parts[1]  # Keep first decimal only
-            if cleaned and cleaned != '.' and cleaned != '':
-                val = float(cleaned)
-                if val > 0:
-                    return val
-        except:
-            pass
-        return None
+        if not isinstance(price_str, str):
+            return None
+
+        # remove currency & commas only
+        cleaned = (
+            price_str
+            .replace("Rs.", "")
+            .replace("₹", "")
+            .replace(",", "")
+            .strip()
+        )
+
+        # must be digits only now
+        if not cleaned.isdigit():
+            return None
+
+        val = float(cleaned)
+
+        # sanity range for electronics
+        if val < 100 or val > 500000:
+            return None
+
+        return val
+
     
     df["Price_num"] = df["Price"].apply(extract_price)
     
     # Clean Discount - extract percentage number
-    def extract_discount(discount_str):
+    def extract_discount(discount_str): 
         try:
             match = re.search(r'(\d+)', str(discount_str))
             if match:

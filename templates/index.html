@@ -3,219 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Product Recommendation System</title>
+    <title>Smart Product Finder</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <i class="fas fa-sparkles"></i>
-                <span>Smart Product Recommendation System</span>
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>
+                <span class="logo-text">Smart Product Finder</span>
             </div>
-            <p class="tagline">AI-Powered Deal Discovery Across E-commerce Platforms</p>
+            <p class="tagline">AI-Powered Deal Discovery</p>
         </div>
     </nav>
 
     <main class="container">
-        <!-- Hero Section -->
+        <!-- HERO -->
         <section class="hero">
             <div class="hero-content">
-                <h1>Find Your Perfect Deal</h1>
-                <p class="hero-subtitle">Using advanced KNN machine learning algorithm to discover the best products across multiple platforms</p>
+                <h1 class="hero-title">Find Your Perfect Deal</h1>
+                <p class="hero-subtitle">
+                    Compare products across multiple platforms using intelligent algorithms
+                </p>
             </div>
-            
-            <!-- Search Section -->
+
+            <!-- Search Form -->
             <form method="POST" action="/search" class="search-form" id="searchForm">
-                <!-- Website Selection -->
-                <div class="website-selector">
-                    <label class="selector-label">
-                        <i class="fas fa-globe"></i> Select Platforms (minimum 2):
-                    </label>
-                    <div class="checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="websites" value="amazon" checked class="website-checkbox">
-                            <span class="checkbox-custom"></span>
-                            <i class="fab fa-amazon"></i> Amazon
+
+                <!-- Platform Selector -->
+                <div class="platform-selector">
+                    <label class="selector-label">Select Platforms (minimum 2)</label>
+
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="websites" value="amazon" checked>
+                            <span class="checkbox-box"></span>
+                            <span class="checkbox-label">Amazon</span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="websites" value="flipkart" checked class="website-checkbox">
-                            <span class="checkbox-custom"></span>
-                            <i class="fas fa-store"></i> Flipkart
+
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="websites" value="flipkart" checked>
+                            <span class="checkbox-box"></span>
+                            <span class="checkbox-label">Flipkart</span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="websites" value="croma" class="website-checkbox">
-                            <span class="checkbox-custom"></span>
-                            <i class="fas fa-laptop"></i> Croma
+
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="websites" value="croma">
+                            <span class="checkbox-box"></span>
+                            <span class="checkbox-label">Croma</span>
                         </label>
                     </div>
-                    <p class="selector-note" id="selectorNote"></p>
+
+                    <p class="selection-status" id="platformStatus">2 platforms selected</p>
                 </div>
 
-                <!-- Product Search Input -->
-                <div class="search-wrapper">
-                    <div class="search-box-primary">
-                        <i class="fas fa-search search-icon"></i>
-                        <input 
-                            type="text" 
-                            name="product" 
-                            placeholder="Search for products..." 
-                            required 
-                            autofocus
-                            class="search-input-primary"
-                        >
-                        <button type="submit" class="search-btn-primary" id="searchBtn">
-                            Search Now
-                        </button>
-                    </div>
-                    <p class="search-hint">Try: iPhone, Laptop, Headphones, Smartwatch...</p>
+                <!-- Search Box -->
+                <div class="search-box">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" 
+                         stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+
+                    <input type="text" name="product" class="search-input" 
+                           placeholder="Search for products..." required>
+
+                    <button type="submit" class="search-button" id="searchBtn">
+                        Search
+                    </button>
                 </div>
+
+                <p class="search-hint">Try: Laptop, Headphones, Smartphone, Smartwatch</p>
             </form>
         </section>
 
-        <!-- Features Section -->
-        <section class="features-section">
-            <h2 class="section-title">Why Choose Us?</h2>
+        <!-- FEATURES -->
+        <section class="features">
+            <h2 class="section-title">Why Choose Us</h2>
+
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-network-wired"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
                     </div>
-                    <h3>Multi-Platform Search</h3>
-                    <p>Compare deals across Amazon, Flipkart, and Croma simultaneously in real-time</p>
+                    <h3 class="feature-title">Multi-Platform Search</h3>
+                    <p class="feature-description">
+                        Compare deals across Amazon, Flipkart, and Croma simultaneously
+                    </p>
                 </div>
+
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-brain"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z"></path>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
                     </div>
-                    <h3>AI-Powered Algorithm</h3>
-                    <p>K-Nearest Neighbors machine learning finds the best deals based on price, rating, and discount</p>
+                    <h3 class="feature-title">Real-Time Data</h3>
+                    <p class="feature-description">
+                        Live updates ensure you get the latest prices and availability
+                    </p>
                 </div>
+
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
                     </div>
-                    <h3>Real-Time Data</h3>
-                    <p>Live web scraping ensures you get the latest prices and availability instantly</p>
+                    <h3 class="feature-title">AI Algorithm</h3>
+                    <p class="feature-description">
+                        Machine learning finds the best deals based on multiple factors
+                    </p>
                 </div>
+
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="20" x2="12" y2="10"></line>
+                            <line x1="18" y1="20" x2="18" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="16"></line>
+                        </svg>
                     </div>
-                    <h3>Visual Analytics</h3>
-                    <p>Interactive 3D charts visualize product comparisons across multiple dimensions</p>
+                    <h3 class="feature-title">Visual Analytics</h3>
+                    <p class="feature-description">
+                        Interactive charts help you compare products effectively
+                    </p>
                 </div>
             </div>
         </section>
 
-        <!-- How It Works Section -->
+        <!-- HOW IT WORKS -->
         <section class="how-it-works">
             <h2 class="section-title">How It Works</h2>
+
             <div class="steps-grid">
                 <div class="step-card">
                     <div class="step-number">1</div>
-                    <h4>Select Platforms</h4>
-                    <p>Choose at least 2 e-commerce platforms to search across</p>
+                    <h3 class="step-title">Select Platforms</h3>
+                    <p class="step-description">Choose at least 2 e-commerce platforms</p>
                 </div>
+
                 <div class="step-card">
                     <div class="step-number">2</div>
-                    <h4>Enter Product</h4>
-                    <p>Type any product name you're looking for</p>
+                    <h3 class="step-title">Enter Product</h3>
+                    <p class="step-description">Type the product you're looking for</p>
                 </div>
+
                 <div class="step-card">
                     <div class="step-number">3</div>
-                    <h4>Smart Analysis</h4>
-                    <p>System scrapes live data and applies KNN algorithm</p>
+                    <h3 class="step-title">Smart Analysis</h3>
+                    <p class="step-description">AI analyzes and ranks the best deals</p>
                 </div>
+
                 <div class="step-card">
                     <div class="step-number">4</div>
-                    <h4>View Results</h4>
-                    <p>Get top 5 personalized recommendations with direct links</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Technology Stack Section -->
-        <section class="tech-stack">
-            <h2 class="section-title">Built With Advanced Technology</h2>
-            <div class="tech-grid">
-                <div class="tech-item">
-                    <i class="fab fa-python"></i>
-                    <span>Python</span>
-                </div>
-                <div class="tech-item">
-                    <i class="fab fa-react"></i>
-                    <span>React</span>
-                </div>
-                <div class="tech-item">
-                    <i class="fas fa-database"></i>
-                    <span>Machine Learning</span>
-                </div>
-                <div class="tech-item">
-                    <i class="fas fa-chart-scatter"></i>
-                    <span>Plotly</span>
-                </div>
-                <div class="tech-item">
-                    <i class="fas fa-flask"></i>
-                    <span>Flask</span>
-                </div>
-                <div class="tech-item">
-                    <i class="fas fa-spider"></i>
-                    <span>Web Scraping</span>
+                    <h3 class="step-title">View Results</h3>
+                    <p class="step-description">Get personalized recommendations</p>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <p>&copy; 2025 Smart Product Recommendation System | Powered by Python, Flask & Machine Learning</p>
-            <p class="footer-subtitle">Final Year Project - Advanced AI & Data Science</p>
+            <p class="footer-text">Smart Product Finder</p>
+            <p class="footer-subtext">Powered by Machine Learning & Data Science</p>
         </div>
     </footer>
 
     <script>
-        const websiteCheckboxes = document.querySelectorAll('.website-checkbox');
-        const searchBtn = document.getElementById('searchBtn');
-        const selectorNote = document.getElementById('selectorNote');
+        const checkboxes = document.querySelectorAll('input[name="websites"]');
+        const platformStatus = document.getElementById("platformStatus");
+        const searchBtn = document.getElementById("searchBtn");
 
-        function validateWebsiteSelection() {
-            const checkedCount = document.querySelectorAll('.website-checkbox:checked').length;
-            
-            if (checkedCount < 2) {
-                searchBtn.disabled = true;
-                searchBtn.style.opacity = '0.5';
-                searchBtn.style.cursor = 'not-allowed';
-                selectorNote.textContent = `Please select at least 2 platforms (${checkedCount}/2 selected)`;
-                selectorNote.style.color = '#ef4444';
-            } else {
-                searchBtn.disabled = false;
-                searchBtn.style.opacity = '1';
-                searchBtn.style.cursor = 'pointer';
-                selectorNote.textContent = `${checkedCount} platform(s) selected`;
-                selectorNote.style.color = '#10b981';
-            }
+        function updateSelection() {
+            const count = document.querySelectorAll('input[name="websites"]:checked').length;
+            platformStatus.textContent = `${count} platform${count===1?'':'s'} selected`;
+            searchBtn.disabled = count < 2;
         }
 
-        websiteCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', validateWebsiteSelection);
-        });
-
-        validateWebsiteSelection();
-
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
-            const checkedCount = document.querySelectorAll('.website-checkbox:checked').length;
-            if (checkedCount < 2) {
-                e.preventDefault();
-                alert('Please select at least 2 platforms');
-                return false;
-            }
-            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
-            searchBtn.disabled = true;
-        });
+        checkboxes.forEach(cb => cb.addEventListener("change", updateSelection));
+        updateSelection();
     </script>
 </body>
 </html>
