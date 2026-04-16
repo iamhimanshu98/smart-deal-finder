@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Watchlist — SmartDeal Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-text">SmartDeal</span>
+    </a>
+  </div>
+  <div class="nav-links">
+    <a href="/" class="nav-link">← New Search</a>
+    <a href="/watchlist" class="nav-link active">Watchlist</a>
+  </div>
+</nav>
+
+<div class="page-content">
+  <h1 class="page-title">🔔 My Watchlist</h1>
+  <p class="page-sub">Products you're tracking for the best deal</p>
+
+  {% if watchlist %}
+  <div class="watchlist-grid">
+    {% for item in watchlist %}
+    <div class="watchlist-card" id="wcard-{{ loop.index0 }}">
+      <div class="card-source source-{{ item.source | lower | replace(' ', '') }}">{{ item.source }}</div>
+      <h3 class="card-title">{{ item.title[:70] }}{% if item.title|length > 70 %}…{% endif %}</h3>
+      <div class="card-price" style="margin:12px 0;">{{ item.price }}</div>
+      <div class="card-meta">Added {{ item.added_at[:10] }}</div>
+      <div class="card-actions" style="margin-top:16px;">
+        <a href="{{ item.url }}" target="_blank" class="btn-primary">View Deal →</a>
+        <button class="btn-watchlist" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#f87171;"
+                onclick="removeItem({{ loop.index0 }})">🗑 Remove</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🔔</div>
+    <h3>Your watchlist is empty</h3>
+    <p>Search for products and click "Watch" to add them here.</p>
+    <a href="/" class="btn-primary">Find Deals →</a>
+  </div>
+  {% endif %}
+</div>
+
+<footer class="footer">
+  <p>⚡ SmartDeal Finder — B.Tech Final Year Project</p>
+</footer>
+
+<script>
+function removeItem(index) {
+  fetch(`/api/watchlist/${index}`, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        const card = document.getElementById(`wcard-${index}`);
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.9)';
+        card.style.transition = 'all 0.3s';
+        setTimeout(() => card.remove(), 300);
+      }
+    });
+}
+</script>
+</body>
+</html>

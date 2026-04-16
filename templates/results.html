@@ -1,98 +1,391 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Results - Smart Product Finder</title>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Results for "{{ product }}" — SmartDeal Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 6v6l4 2"></path>
-                </svg>
-                <span class="logo-text">Smart Product Finder</span>
-            </div>
 
-            <a href="/" class="back-btn">← New Search</a>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-text">SmartDeal</span>
+    </a>
+  </div>
+  <div class="nav-links">
+    <a href="/" class="nav-link">← New Search</a>
+    <a href="/watchlist" class="nav-link" id="watchlistNav">Watchlist</a>
+  </div>
+</nav>
+
+<!-- Results Header -->
+<div class="results-header">
+  <div class="results-meta">
+    <span class="results-query">Results for <strong>"{{ product }}"</strong></span>
+    {% if stats %}
+    <span class="results-count">{{ stats.count }} top deals found</span>
+    {% endif %}
+  </div>
+
+  {% if stats and stats.count > 0 %}
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Lowest Price</span>
+      <span class="stat-value green">{{ stats.lowest_price }}</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Average Price</span>
+      <span class="stat-value">{{ stats.avg_price }}</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Highest Price</span>
+      <span class="stat-value red">{{ stats.highest_price }}</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Sources</span>
+      <span class="stat-value">{{ stats.sources | join(', ') }}</span>
+    </div>
+    {% if stats.cached %}
+    <div class="stat-cache-badge">⚡ Cached</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Sort Controls -->
+  {% if deals %}
+  <form method="POST" action="/search" class="sort-form">
+    <input type="hidden" name="product" value="{{ product }}">
+    {% for site in websites %}
+    <input type="hidden" name="websites" value="{{ site }}">
+    {% endfor %}
+    <label class="sort-label">Sort by:</label>
+    <select name="sort_by" class="sort-select" onchange="this.form.submit()">
+      <option value="deal_score" {% if sort_by=='deal_score' %}selected{% endif %}>Best Deal Score</option>
+      <option value="price_asc" {% if sort_by=='price_asc' %}selected{% endif %}>Price: Low → High</option>
+      <option value="price_desc" {% if sort_by=='price_desc' %}selected{% endif %}>Price: High → Low</option>
+      <option value="rating" {% if sort_by=='rating' %}selected{% endif %}>Highest Rated</option>
+    </select>
+  </form>
+  {% endif %}
+</div>
+
+<!-- Error Banner -->
+{% if error %}
+<div class="error-banner">
+  <span>⚠️</span>
+  <span>{{ error }}</span>
+  <a href="/" class="error-back">Try Again →</a>
+</div>
+{% endif %}
+
+<!-- Deal Cards -->
+{% if deals %}
+<section class="deals-section">
+  <h2 class="section-heading">🏆 Top Deals</h2>
+  <div class="deals-grid">
+    {% for deal in deals %}
+    <div class="deal-card {% if loop.index == 1 %}best-deal{% endif %}" data-index="{{ loop.index }}">
+      
+      {% if loop.index == 1 %}
+      <div class="best-badge">🥇 Best Deal</div>
+      {% elif loop.index == 2 %}
+      <div class="best-badge runner">🥈 Runner Up</div>
+      {% elif loop.index == 3 %}
+      <div class="best-badge third">🥉 3rd Place</div>
+      {% endif %}
+
+      <!-- Source Badge -->
+      <div class="card-source source-{{ deal.source | lower | replace(' ', '') }}">
+        {{ deal.source }}
+      </div>
+
+      <!-- Title -->
+      <h3 class="card-title">{{ deal.title[:80] }}{% if deal.title|length > 80 %}…{% endif %}</h3>
+
+      <!-- Price and Rating Row -->
+      <div class="card-metrics">
+        <div class="card-price">{{ deal.price }}</div>
+        <div class="card-rating">
+          <span class="star">★</span>
+          {{ deal.rating }}
         </div>
-    </nav>
+      </div>
 
-    <main class="container">
-        <!-- HEADER -->
-        <section class="results-header">
-            <h2 class="results-title">
-                Results for <span class="highlight">{{ product }}</span>
-            </h2>
-
-            {% if websites %}
-            <div class="platform-badges">
-                {% for site in websites %}
-                    <span class="platform-pill pill-{{ site }}">{{ site|capitalize }}</span>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </section>
-
-        <!-- ERRORS -->
-        {% if error %}
-        <div class="error-box">
-            <strong>Error:</strong> {{ error }}
+      <!-- Deal Score Meter -->
+      <div class="deal-score-row">
+        <span class="score-label">Deal Score</span>
+        <div class="score-bar-wrap">
+          <div class="score-bar" style="width: {{ deal.deal_score }}%;"
+               data-score="{{ deal.deal_score }}"></div>
         </div>
-        {% endif %}
+        <span class="score-num {% if deal.deal_score >= 75 %}score-high{% elif deal.deal_score >= 50 %}score-mid{% else %}score-low{% endif %}">
+          {{ deal.deal_score }}/100
+        </span>
+      </div>
 
-        <!-- DEALS -->
-        {% if deals and not error %}
-        <section>
-            <h3 class="section-title">Top Deals</h3>
+      {% if deal.savings_vs_avg > 0 %}
+      <div class="savings-badge">
+        💰 ₹{{ '{:,}'.format(deal.savings_vs_avg) }} below 30-day avg
+      </div>
+      {% endif %}
 
-            <div class="deal-grid">
-                {% for d in deals %}
-                <div class="deal-card">
-                    <span class="deal-rank">#{{ loop.index }}</span>
+      <!-- Price History Mini Chart -->
+      {% if deal.price_history %}
+      <div class="mini-chart-wrap">
+        <canvas class="mini-chart" id="chart-{{ loop.index }}"
+                data-history='{{ deal.price_history | tojson }}'></canvas>
+        <span class="chart-label">30-Day Price Trend</span>
+      </div>
+      {% endif %}
 
-                    <h3 class="deal-title">{{ d.title }}</h3>
+      <!-- Actions -->
+      <div class="card-actions">
+        <a href="{{ deal.url }}" target="_blank" class="btn-primary">
+          Buy Now →
+        </a>
+        <button class="btn-watchlist" onclick="addToWatchlist(this)"
+                data-title="{{ deal.title | e }}"
+                data-price="{{ deal.price }}"
+                data-url="{{ deal.url }}"
+                data-source="{{ deal.source }}">
+          🔔 Watch
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
 
-                    <div class="deal-meta">
-                        <p><strong>Price:</strong> {{ d.price }}</p>
-                        <p><strong>Rating:</strong> ⭐ {{ d.rating }}</p>
-                        <p><strong>Source:</strong> {{ d.source }}</p>
-                    </div>
+<!-- 3D Visualization -->
+{% if plot_json %}
+<section class="viz-section">
+  <h2 class="section-heading">📊 3D Product Analysis</h2>
+  <p class="viz-subtitle">All scraped products visualized by price, discount, and rating. Green dots = top 5 deals.</p>
+  <div class="plot-container" id="plotly-chart"></div>
+</section>
+{% endif %}
 
-                    <a href="{{ d.url }}" target="_blank" class="deal-btn">View Deal</a>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
+<!-- Comparison Table -->
+{% if all_products %}
+<section class="compare-section">
+  <h2 class="section-heading">📋 Full Product Comparison</h2>
+  <div class="table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Rating</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in all_products %}
+        <tr>
+          <td class="col-num">{{ loop.index }}</td>
+          <td class="col-title">{{ p.title }}</td>
+          <td class="col-price">₹{{ '{:,}'.format(p.price) }}</td>
+          <td class="col-rating">
+            <span class="star-sm">★</span> {{ "%.1f" | format(p.rating) }}
+          </td>
+          <td>
+            <span class="source-tag source-{{ p.source | lower | replace(' ', '') }}">
+              {{ p.source }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
 
-        {% endif %}
+<!-- Price Distribution Chart -->
+{% if all_products %}
+<section class="dist-section">
+  <h2 class="section-heading">📈 Price Distribution</h2>
+  <div class="dist-chart-wrap">
+    <canvas id="priceDistChart"></canvas>
+  </div>
+</section>
+{% endif %}
 
-        <!-- VISUALIZATION -->
-        {% if plot_json %}
-        <section class="visual-box">
-            <h3 class="section-title">Visual Analysis</h3>
-            <div id="plotChart" class="plot"></div>
-        </section>
+{% else %}
+<!-- Empty State -->
+<div class="empty-state">
+  <div class="empty-icon">🔍</div>
+  <h3>No deals found{% if product %} for "{{ product }}"{% endif %}</h3>
+  <p>Try a different product name or select more websites to search.</p>
+  <a href="/" class="btn-primary">← Try Again</a>
+</div>
+{% endif %}
 
-        <script>
-            const plot_data = JSON.parse(`{{ plot_json | safe }}`);
-            Plotly.newPlot('plotChart', plot_data.data, plot_data.layout);
-        </script>
-        {% endif %}
-    </main>
+<!-- Watchlist Toast -->
+<div class="toast" id="toast"></div>
 
-    <footer class="footer">
-        <div class="footer-content">
-            <p class="footer-text">Smart Product Finder</p>
-            <p class="footer-subtext">Powered by AI & ML</p>
-        </div>
-    </footer>
+<footer class="footer">
+  <p>⚡ SmartDeal Finder — B.Tech Final Year Project | Flask + Selenium + KNN</p>
+</footer>
+
+<script>
+// ── Plot.ly 3D Chart ──────────────────────────────────
+{% if plot_json %}
+(function() {
+  const plotData = {{ plot_json | safe }};
+  // Dark theme override
+  plotData.layout = plotData.layout || {};
+  plotData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+  plotData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+  plotData.layout.font = { color: '#e2e8f0', family: 'DM Sans' };
+  plotData.layout.height = 500;
+  Plotly.newPlot('plotly-chart', plotData.data, plotData.layout, {responsive: true});
+})();
+{% endif %}
+
+// ── Mini Price History Charts ─────────────────────────
+document.querySelectorAll('.mini-chart').forEach(canvas => {
+  const history = JSON.parse(canvas.dataset.history);
+  const labels = history.map(h => h.date);
+  const prices = history.map(h => h.price);
+  const ctx = canvas.getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: prices,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.08)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => '₹' + ctx.raw.toLocaleString() }
+      }},
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      }
+    }
+  });
+});
+
+// ── Price Distribution Bar Chart ──────────────────────
+{% if all_products %}
+(function() {
+  const products = {{ all_products | tojson }};
+  const amazonPrices = products.filter(p => p.source === 'Amazon').map(p => p.price);
+  const flipkartPrices = products.filter(p => p.source === 'Flipkart').map(p => p.price);
+  const cromaPrices = products.filter(p => p.source === 'Croma').map(p => p.price);
+
+  const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+  const min = arr => arr.length ? Math.min(...arr) : 0;
+  const max = arr => arr.length ? Math.max(...arr) : 0;
+
+  const sources = [];
+  const avgs = [], mins = [], maxs = [];
+  if (amazonPrices.length) { sources.push('Amazon'); avgs.push(avg(amazonPrices)); mins.push(min(amazonPrices)); maxs.push(max(amazonPrices)); }
+  if (flipkartPrices.length) { sources.push('Flipkart'); avgs.push(avg(flipkartPrices)); mins.push(min(flipkartPrices)); maxs.push(max(flipkartPrices)); }
+  if (cromaPrices.length) { sources.push('Croma'); avgs.push(avg(cromaPrices)); mins.push(min(cromaPrices)); maxs.push(max(cromaPrices)); }
+
+  if (!sources.length) return;
+
+  const ctx = document.getElementById('priceDistChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sources,
+      datasets: [
+        { label: 'Min Price', data: mins, backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 },
+        { label: 'Avg Price', data: avgs, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
+        { label: 'Max Price', data: maxs, backgroundColor: 'rgba(239,68,68,0.5)', borderRadius: 6 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#94a3b8' } },
+        tooltip: { callbacks: { label: ctx => '₹' + ctx.raw.toLocaleString() } }
+      },
+      scales: {
+        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: {
+          ticks: { color: '#94a3b8', callback: v => '₹' + (v/1000).toFixed(0) + 'k' },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        }
+      }
+    }
+  });
+})();
+{% endif %}
+
+// ── Watchlist ─────────────────────────────────────────
+function addToWatchlist(btn) {
+  const payload = {
+    title: btn.dataset.title,
+    price: btn.dataset.price,
+    url: btn.dataset.url,
+    source: btn.dataset.source,
+  };
+  fetch('/api/watchlist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast('✅ Added to Watchlist!');
+      btn.textContent = '✅ Watching';
+      btn.disabled = true;
+      document.getElementById('watchlistNav').textContent = `Watchlist (${data.count})`;
+    } else {
+      showToast('Already in your watchlist');
+    }
+  });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Animate score bars on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.score-bar').forEach(bar => {
+    const target = bar.style.width;
+    bar.style.width = '0%';
+    setTimeout(() => { bar.style.width = target; }, 300);
+  });
+});
+</script>
+
 </body>
 </html>

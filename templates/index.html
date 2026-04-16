@@ -1,200 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Product Finder</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartDeal Finder — Best Prices Across India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 6v6l4 2"></path>
-                </svg>
-                <span class="logo-text">Smart Product Finder</span>
-            </div>
-            <p class="tagline">AI-Powered Deal Discovery</p>
+
+<!-- Animated background -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="brand-icon">⚡</span>
+    <span class="brand-text">SmartDeal</span>
+  </div>
+  <div class="nav-links">
+    <a href="/" class="nav-link active">Home</a>
+    <a href="/watchlist" class="nav-link">
+      Watchlist
+      {% if watchlist_count > 0 %}
+        <span class="badge">{{ watchlist_count }}</span>
+      {% endif %}
+    </a>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">🔥 AI-Powered Price Intelligence</div>
+    <h1 class="hero-title">
+      Find the <span class="gradient-text">Smartest Deal</span><br>
+      Across Every Store
+    </h1>
+    <p class="hero-subtitle">
+      We scrape Amazon, Flipkart & Croma in real-time, then use machine learning<br>
+      to surface the top 5 deals — so you never overpay again.
+    </p>
+
+    <!-- Main Search Form -->
+    <form action="/search" method="POST" class="search-form" id="mainSearchForm">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          name="product"
+          id="productInput"
+          class="search-input"
+          placeholder="Search for iPhone, Laptop, Shoes..."
+          autocomplete="off"
+          required
+        />
+        <button type="submit" class="search-btn" id="searchBtn">
+          <span class="btn-text">Find Deals</span>
+          <span class="btn-loader" style="display:none">⏳</span>
+        </button>
+      </div>
+
+      <!-- Source Checkboxes -->
+      <div class="source-row">
+        <span class="source-label">Search on:</span>
+        <label class="source-chip">
+          <input type="checkbox" name="websites" value="amazon" checked>
+          <span>🛒 Amazon</span>
+        </label>
+        <label class="source-chip">
+          <input type="checkbox" name="websites" value="flipkart" checked>
+          <span>🏬 Flipkart</span>
+        </label>
+        <label class="source-chip">
+          <input type="checkbox" name="websites" value="croma">
+          <span>🔌 Croma</span>
+        </label>
+      </div>
+
+      <!-- Advanced Filters (collapsible) -->
+      <div class="advanced-toggle" onclick="toggleAdvanced()">
+        ⚙️ Advanced Filters <span id="advArrow">▼</span>
+      </div>
+      <div class="advanced-filters" id="advancedFilters" style="display:none">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Max Budget (₹)</label>
+            <input type="number" name="budget_max" placeholder="e.g. 50000" class="filter-input">
+          </div>
+          <div class="filter-group">
+            <label>Min Rating</label>
+            <select name="min_rating" class="filter-input">
+              <option value="0">Any</option>
+              <option value="3">3+ ⭐</option>
+              <option value="4">4+ ⭐</option>
+              <option value="4.5">4.5+ ⭐</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort Results By</label>
+            <select name="sort_by" class="filter-input">
+              <option value="deal_score">Best Deal Score</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="rating">Highest Rated</option>
+            </select>
+          </div>
         </div>
-    </nav>
+      </div>
+    </form>
 
-    <main class="container">
-        <!-- HERO -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1 class="hero-title">Find Your Perfect Deal</h1>
-                <p class="hero-subtitle">
-                    Compare products across multiple platforms using intelligent algorithms
-                </p>
-            </div>
+    <!-- Popular Searches -->
+    <div class="popular-row">
+      <span class="popular-label">Popular:</span>
+      {% for term in popular_searches %}
+        <button class="popular-chip" onclick="setSearch('{{ term }}')">{{ term }}</button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 
-            <!-- Search Form -->
-            <form method="POST" action="/search" class="search-form" id="searchForm">
+<!-- Features Section -->
+<section class="features-section">
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>KNN Algorithm</h3>
+      <p>K-Nearest Neighbors ML model finds products closest to the "ideal deal" — best price, rating, and discount combined.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Real-Time Scraping</h3>
+      <p>Live data from Amazon, Flipkart & Croma scraped fresh for every search — no outdated prices.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>3D Price Analysis</h3>
+      <p>Interactive 3D visualization comparing all products by price, discount, and rating simultaneously.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📈</div>
+      <h3>Price History</h3>
+      <p>See price trends over 30 days so you know if now is the right time to buy.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔔</div>
+      <h3>Watchlist</h3>
+      <p>Save products to your watchlist and track the best deals over time.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏆</div>
+      <h3>Deal Score</h3>
+      <p>Each product gets a Deal Score out of 100 combining price, rating, and discount into one number.</p>
+    </div>
+  </div>
+</section>
 
-                <!-- Platform Selector -->
-                <div class="platform-selector">
-                    <label class="selector-label">Select Platforms (minimum 2)</label>
+<!-- How It Works -->
+<section class="how-section">
+  <h2 class="section-title">How It Works</h2>
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h4>You Search</h4>
+      <p>Type any product name and select your preferred stores</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h4>We Scrape</h4>
+      <p>Selenium scrapes live listings across all selected platforms</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h4>ML Ranks</h4>
+      <p>KNN algorithm identifies top 5 best deals from all results</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h4>You Save</h4>
+      <p>Click through to the best deal and save money instantly</p>
+    </div>
+  </div>
+</section>
 
-                    <div class="checkbox-grid">
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="websites" value="amazon" checked>
-                            <span class="checkbox-box"></span>
-                            <span class="checkbox-label">Amazon</span>
-                        </label>
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display:none">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <h3 class="loading-title">Finding Best Deals...</h3>
+    <p class="loading-sub" id="loadingStatus">Initializing scrapers</p>
+    <div class="loading-steps">
+      <div class="lstep active" id="ls1">🌐 Connecting to stores</div>
+      <div class="lstep" id="ls2">📦 Collecting products</div>
+      <div class="lstep" id="ls3">🤖 Running KNN algorithm</div>
+      <div class="lstep" id="ls4">📊 Generating insights</div>
+    </div>
+  </div>
+</div>
 
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="websites" value="flipkart" checked>
-                            <span class="checkbox-box"></span>
-                            <span class="checkbox-label">Flipkart</span>
-                        </label>
+<footer class="footer">
+  <p>⚡ SmartDeal Finder — B.Tech Final Year Project | Built with Flask + Selenium + Scikit-learn</p>
+</footer>
 
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="websites" value="croma">
-                            <span class="checkbox-box"></span>
-                            <span class="checkbox-label">Croma</span>
-                        </label>
-                    </div>
+<script>
+  function setSearch(term) {
+    document.getElementById('productInput').value = term;
+    document.getElementById('productInput').focus();
+  }
 
-                    <p class="selection-status" id="platformStatus">2 platforms selected</p>
-                </div>
+  function toggleAdvanced() {
+    const el = document.getElementById('advancedFilters');
+    const arrow = document.getElementById('advArrow');
+    if (el.style.display === 'none') {
+      el.style.display = 'grid';
+      arrow.textContent = '▲';
+    } else {
+      el.style.display = 'none';
+      arrow.textContent = '▼';
+    }
+  }
 
-                <!-- Search Box -->
-                <div class="search-box">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" 
-                         stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
+  document.getElementById('mainSearchForm').addEventListener('submit', function(e) {
+    const atLeastTwo = document.querySelectorAll('input[name="websites"]:checked').length >= 2;
+    if (!atLeastTwo) {
+      e.preventDefault();
+      alert('Please select at least 2 websites to compare prices.');
+      return;
+    }
+    // Show loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('searchBtn').querySelector('.btn-text').style.display = 'none';
+    document.getElementById('searchBtn').querySelector('.btn-loader').style.display = 'inline';
 
-                    <input type="text" name="product" class="search-input" 
-                           placeholder="Search for products..." required>
+    // Animate loading steps
+    const steps = ['ls1', 'ls2', 'ls3', 'ls4'];
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i > 0) document.getElementById(steps[i - 1]).classList.remove('active');
+      if (i < steps.length) {
+        document.getElementById(steps[i]).classList.add('active');
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 18000); // ~72s total
+  });
+</script>
 
-                    <button type="submit" class="search-button" id="searchBtn">
-                        Search
-                    </button>
-                </div>
-
-                <p class="search-hint">Try: Laptop, Headphones, Smartphone, Smartwatch</p>
-            </form>
-        </section>
-
-        <!-- FEATURES -->
-        <section class="features">
-            <h2 class="section-title">Why Choose Us</h2>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Multi-Platform Search</h3>
-                    <p class="feature-description">
-                        Compare deals across Amazon, Flipkart, and Croma simultaneously
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z"></path>
-                            <path d="M12 6v6l4 2"></path>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Real-Time Data</h3>
-                    <p class="feature-description">
-                        Live updates ensure you get the latest prices and availability
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">AI Algorithm</h3>
-                    <p class="feature-description">
-                        Machine learning finds the best deals based on multiple factors
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="20" x2="12" y2="10"></line>
-                            <line x1="18" y1="20" x2="18" y2="4"></line>
-                            <line x1="6" y1="20" x2="6" y2="16"></line>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Visual Analytics</h3>
-                    <p class="feature-description">
-                        Interactive charts help you compare products effectively
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- HOW IT WORKS -->
-        <section class="how-it-works">
-            <h2 class="section-title">How It Works</h2>
-
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h3 class="step-title">Select Platforms</h3>
-                    <p class="step-description">Choose at least 2 e-commerce platforms</p>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h3 class="step-title">Enter Product</h3>
-                    <p class="step-description">Type the product you're looking for</p>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h3 class="step-title">Smart Analysis</h3>
-                    <p class="step-description">AI analyzes and ranks the best deals</p>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <h3 class="step-title">View Results</h3>
-                    <p class="step-description">Get personalized recommendations</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <div class="footer-content">
-            <p class="footer-text">Smart Product Finder</p>
-            <p class="footer-subtext">Powered by Machine Learning & Data Science</p>
-        </div>
-    </footer>
-
-    <script>
-        const checkboxes = document.querySelectorAll('input[name="websites"]');
-        const platformStatus = document.getElementById("platformStatus");
-        const searchBtn = document.getElementById("searchBtn");
-
-        function updateSelection() {
-            const count = document.querySelectorAll('input[name="websites"]:checked').length;
-            platformStatus.textContent = `${count} platform${count===1?'':'s'} selected`;
-            searchBtn.disabled = count < 2;
-        }
-
-        checkboxes.forEach(cb => cb.addEventListener("change", updateSelection));
-        updateSelection();
-    </script>
 </body>
 </html>

@@ -1,115 +1,165 @@
-# Smart Deal Finder
+# ⚡ SmartDeal Finder
 
-Smart Deal Finder is a web‑scraping and recommendation tool designed to fetch product details from multiple e‑commerce websites and suggest the best available deals based on user preferences.
+> **B.Tech Final Year Project** — AI-powered e-commerce price intelligence platform
 
----
-
-## 🚀 Features
-
-- Automated web scraper to collect product details such as name, price, ratings, and links.
-- Data cleaning and aggregation into CSV files for analysis.
-- Recommendation engine using _KNN_ to identify top‑5 best deals.
-- Product comparison across different brands and models.
-- Lightweight web UI (Flask or similar framework) to present deals to end users.
+SmartDeal Finder scrapes live product listings from multiple e-commerce platforms and uses a **K-Nearest Neighbors (KNN) machine learning algorithm** to surface the top 5 best deals — combining price, rating, and discount into a single **Deal Score**.
 
 ---
 
-## 📂 Project Structure
+## 🎯 Project Highlights
+
+| Feature | Details |
+|---|---|
+| **ML Algorithm** | K-Nearest Neighbors (KNN) via scikit-learn |
+| **Scraping** | Selenium + BeautifulSoup (Amazon, Flipkart, Croma) |
+| **Backend** | Python Flask REST API |
+| **Visualization** | Plotly 3D scatter + Chart.js price history |
+| **UI** | Dark glassmorphism, responsive design |
+| **Extras** | Watchlist, deal score meter, price trend simulation |
+
+---
+
+## 🗂 Project Structure
 
 ```
 smart-deal-finder/
-├── app.py                      # Web server / main application
-├── scraper.py                  # Web scraping logic
-├── static/                     # CSS, images, and client‑side assets
-├── templates/                  # HTML templates for UI
-├── *.csv                       # Scraped & cleaned product datasets
-├── Top_5_KNN_Cleaned_Deals.csv # Example recommendation output
-├── requirements.txt            # Python dependencies
-└── chromedriver.exe            # WebDriver for Chrome scraping
+├── app.py                  # Flask app — routes, caching, watchlist API
+├── scraper.py              # Selenium scraper (Amazon/Flipkart/Croma)
+├── recommender.py          # Standalone ML module (KNN + deal scoring)
+├── templates/
+│   ├── index.html          # Landing page with search UI
+│   ├── results.html        # Results with cards, 3D plot, comparison table
+│   └── watchlist.html      # Saved products page
+├── static/
+│   └── style.css           # Full design system (dark theme)
+├── data/
+│   └── watchlist/          # Persistent JSON watchlist
+└── requirements.txt
 ```
 
 ---
 
-## ⚙️ Installation & Setup
+## ⚙️ Setup & Installation
 
-1. Install Python 3.x
+```bash
+# 1. Clone the repo
+git clone https://github.com/iamhimanshu98/smart-deal-finder.git
+cd smart-deal-finder
 
-2. Clone the repository:
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate        # Linux/Mac
+.\venv\Scripts\activate         # Windows
 
-   ```bash
-   git clone https://github.com/iamhimanshu98/smart-deal-finder.git
-   cd smart-deal-finder
-   ```
+# 3. Install dependencies
+pip install -r requirements.txt
 
-3. (Optional) Create and activate a virtual environment:
+# 4. Run the app
+python app.py
+```
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate   # Linux / macOS
-   .\venv\Scripts\activate    # Windows
-   ```
+Visit `http://localhost:5000`
 
-4. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. Ensure that the installed version of Chrome matches the bundled `chromedriver.exe`. Update the path in the code if needed.
+> **Note**: Chrome must be installed. `webdriver-manager` auto-downloads the correct ChromeDriver.
 
 ---
 
-## ▶️ Usage
+## 🤖 How the KNN Algorithm Works
 
-- Run the scraper to fetch product data:
+The recommender (`recommender.py`) treats each product as a point in 3D feature space:
 
-  ```bash
-  python scraper.py
-  ```
+- **X axis** — Price (inverted, so lower price = farther from origin)  
+- **Y axis** — Discount percentage  
+- **Z axis** — Customer rating
 
-- After scraping, launch the web application:
+An **"ideal deal" point** is computed at (max_inverted_price, max_discount, max_rating). KNN finds the 5 real products **nearest** to this ideal point using Euclidean distance.
 
-  ```bash
-  python app.py
-  ```
+### Deal Score Formula
 
-- Open your browser at `http://localhost:5000` to explore the top deals.
+```
+deal_score = (price_score × 50) + (rating_score × 30) + (discount_score × 20)
+```
 
----
-
-## 🔧 Configuration
-
-- Update target URLs or categories directly in the scraper script.
-- Adjust the KNN parameters or similarity metrics for different recommendation logic.
-- Modify CSV output file names or storage paths if required.
+Each component is min-max normalized to [0, 1] before weighting.
 
 ---
 
-## 🧪 Contributing
+## 📊 Features
 
-- Report bugs in the Issues section.
-- Contributions are welcome via Pull Requests.
-- Ensure code readability and add comments, especially for scraping logic.
+### 🏠 Home Page
+- Animated dark hero with glassmorphism UI
+- Live source selection (Amazon / Flipkart / Croma)
+- Advanced filters: max budget, minimum rating, sort order
+- Quick popular searches
+
+### 📋 Results Page
+- Top 5 deal cards with:
+  - Deal Score meter (animated progress bar)
+  - 30-day simulated price history sparkline
+  - Savings vs. 30-day average
+  - Direct buy links
+- Interactive 3D Plotly visualization (all products)
+- Full comparison table
+- Price distribution bar chart by platform
+- "Watch" button to add to watchlist
+
+### 🔔 Watchlist
+- Persistent JSON-backed watchlist
+- Add/remove products
+- Quick access from navbar
+
+### ⚡ Caching
+- Results cached for 1 hour to avoid redundant scraping
+- Cache freshness displayed on results page
+
+---
+
+## 🧠 Module Descriptions
+
+### `app.py`
+Flask application with routes:
+- `GET /` — Home page
+- `POST /search` — Search + scrape + recommend
+- `GET /watchlist` — Watchlist page
+- `GET/POST /api/watchlist` — Watchlist CRUD API
+- `GET /api/price-history/<product>` — Price history API
+- `GET /health` — Health check
+
+### `scraper.py`
+Selenium-based scraper:
+- Handles Amazon (2 pages), Flipkart (3 pages), Croma
+- Cleans URLs, extracts price/rating/discount
+- Runs KNN (calls recommender logic) and saves CSV + Plotly JSON
+
+### `recommender.py`
+Pure ML module (no Selenium dependency):
+- `clean_dataframe()` — Data cleaning pipeline
+- `compute_deal_scores()` — Weighted deal scoring
+- `recommend_top_n()` — KNN recommendation
+
+---
+
+## 📎 Tech Stack
+
+- **Python 3.11+**
+- **Flask 3.x** — Web framework
+- **Selenium 4.x + webdriver-manager** — Browser automation
+- **BeautifulSoup4** — HTML parsing
+- **Pandas + NumPy** — Data processing
+- **scikit-learn** — KNN & scaling
+- **Plotly** — 3D visualization
+- **Chart.js** (CDN) — Price history charts
+- **Syne + DM Sans** (Google Fonts) — Typography
 
 ---
 
 ## ⚠️ Disclaimer
 
-- Web scraping may be subject to legal and ethical considerations. Always respect website `robots.txt` and terms of service.
-- Scraper reliability depends on the website structure; changes in site layout may break functionality.
-- Implement rate limiting or delays to avoid IP blocking.
+Web scraping is subject to the terms of service of each website. This project is for **educational purposes only**. Rate limiting and delays are implemented to be respectful. Always consult `robots.txt` before deploying in a production context.
 
 ---
 
-## 📄 License
+## 👨‍💻 Author
 
-This project is licensed under _\[Insert License]_ (e.g., MIT / Apache / GPL).
-
----
-
-## 📬 Contact
-
-For questions, suggestions, or collaboration:
-
-- **Author**: Himanshu
-- **GitHub**: [iamhimanshu98](https://github.com/iamhimanshu98)
+**Himanshu** — B.Tech Final Year Student  
+GitHub: [@iamhimanshu98](https://github.com/iamhimanshu98)
