@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 import hashlib
 
+# https://smart-deal-finder-mmuc.onrender.com
+
 app = Flask(__name__)
 app.secret_key = "smart_deal_finder_2024_secret"
 
